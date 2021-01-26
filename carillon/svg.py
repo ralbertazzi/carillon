@@ -146,6 +146,7 @@ def create_staves(
     :param page_width: the width (in mm) of the page used to print the score.
     :param page_height: the height (in mm) of the page used to print the score.
     :param pitch: the distances (in mm) between two consecutive lines of the score.
+    :param pitch_offset: the offset (in number of pitches) at which the score has to start.
     """
     max_time = max(score)
     score_length = (max_time + pitch_offset) * divisor
