@@ -1,8 +1,8 @@
-from carillon.musicbox import MusicBox
 from carillon.read_sheet import get_score_from_file
 from carillon.svg import create_staves
 
 AVAILABLE_NOTES = [
+    "F3",
     "G3",
     "C4",
     "D4",
@@ -31,24 +31,19 @@ AVAILABLE_NOTES = [
     "E6",
     "F6",
     "G6",
+    "A6",
 ]
 
-assert len(set(AVAILABLE_NOTES)) == 28
+assert len(set(AVAILABLE_NOTES)) == 30
 
 if __name__ == "__main__":
-    music_box = MusicBox(
-        notes=AVAILABLE_NOTES,
-        pitch=2.0,
-    )
-
     carillon_beat = 8
     filename = "/Users/ra/Documents/MuseScore3/Scores/Carillon_1.musicxml"
     score = get_score_from_file(filename=filename, carillon_beat=carillon_beat)
-    print(score)
 
     create_staves(
-        music_box=music_box,
+        notes=AVAILABLE_NOTES,
         score=score,
         title="My Composition",
-        output="composiion",
+        output="composition",
     )
