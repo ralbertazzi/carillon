@@ -1,5 +1,4 @@
 import math
-from typing import Optional
 
 import svgwrite
 
@@ -28,7 +27,7 @@ def _cross(dwg: svgwrite.Drawing, size: float, x: float, y: float) -> None:
     _line(dwg=dwg, c1=(x, y - hs), c2=(x, y + hs))
 
 
-def _draw_crosses(
+def _draw_borders(
     dwg: svgwrite.Drawing,
     line_offset: float,
     marker_size: float,
@@ -64,11 +63,10 @@ def _draw_stave_number(
     margin: float,
     stave_number: int,
     stave_height: float,
-    title: str,
 ) -> None:
     dwg.add(
         dwg.text(
-            f"STAVE {stave_number} - {title}",
+            f"STAVE {stave_number}",
             insert=(
                 _mm(margin * 2),
                 _mm(line_offset + stave_height - margin + marker_offset),
@@ -116,7 +114,6 @@ def create_staves(
     score: dict[int, set[str]],
     output: str,
     notes: list[str],
-    title: Optional[str] = None,
     divisor: float = 4.0,
     font_size: float = 1.5,
     marker_offset: float = 6.0,
@@ -126,6 +123,7 @@ def create_staves(
     page_height: float = _A4_HEIGHT,
     pitch: float = 2.0,
     pitch_offset: int = 1,
+    draw_staves: bool = True,
 ) -> None:
     """
     Prints a music score into one or more SVG files ready to be printed.
@@ -135,7 +133,6 @@ def create_staves(
         Notes (such as C4, F#5, ..) must be contained in the music box notes (the 'notes' parameter).
     :param output: the output filename prefix for the SVG file(s) being generated.
     :param notes: the notes of the carillon, ordered from lowest to highest.
-    :param title: the title of the song, printed on each stave. If not passed, the output filename is used.
     :param marker_offset: the upper and lower vertical offset (in mm) from the top and bottom lines to
             the borders of the stave (where you need to cut).
     :param marker_size: the size (in mm) of the marker placed on the four corners around a stave (cutting corners)
@@ -147,6 +144,7 @@ def create_staves(
     :param page_height: the height (in mm) of the page used to print the score.
     :param pitch: the distances (in mm) between two consecutive lines of the score.
     :param pitch_offset: the offset (in number of pitches) at which the score has to start.
+    :param draw_staves: if True, draws the staves. If False, will just draw the notes.
     """
     max_time = max(score)
     score_length = (max_time + pitch_offset) * divisor
@@ -179,7 +177,7 @@ def create_staves(
         for stave in range(staves_per_page):
             line_offset = stave * stave_height + margin
 
-            _draw_crosses(
+            _draw_borders(
                 dwg=dwg,
                 line_offset=line_offset,
                 marker_size=marker_size,
@@ -189,34 +187,30 @@ def create_staves(
                 stave_height=stave_height,
             )
 
-            _draw_stave_number(
-                dwg=dwg,
-                font_size=font_size,
-                line_offset=line_offset,
-                margin=margin,
-                marker_offset=marker_offset,
-                stave_number=(page * staves_per_page) + stave,
-                stave_height=stave_height,
-                title=title or output,
-            )
+            if draw_staves:
+                _draw_stave_number(
+                    dwg=dwg,
+                    font_size=font_size,
+                    line_offset=line_offset,
+                    margin=margin,
+                    marker_offset=marker_offset,
+                    stave_number=(page * staves_per_page) + stave,
+                    stave_height=stave_height,
+                )
 
-            _draw_music_box_notes(
-                dwg=dwg,
-                font_size=font_size,
-                line_offset=line_offset,
-                margin=margin,
-                stave_width=stave_width,
-                notes=notes,
-                pitch=pitch,
-            )
+                _draw_music_box_notes(
+                    dwg=dwg,
+                    font_size=font_size,
+                    line_offset=line_offset,
+                    margin=margin,
+                    stave_width=stave_width,
+                    notes=notes,
+                    pitch=pitch,
+                )
 
             offset_width = ((page * staves_per_page) + stave) * stave_width
 
-            while True:
-                note_width = offset * divisor - offset_width
-                if note_width > stave_width:
-                    break
-
+            while (note_width := offset * divisor - offset_width) <= stave_width:
                 for note in score.get(offset - pitch_offset, set()):
                     note_pos = notes.index(note)
 

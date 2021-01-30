@@ -44,6 +44,6 @@ if __name__ == "__main__":
     create_staves(
         notes=AVAILABLE_NOTES,
         score=score,
-        title="My Composition",
         output="composition",
+        draw_staves=False,
     )
