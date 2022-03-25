@@ -36,10 +36,19 @@ AVAILABLE_NOTES = [
 
 assert len(set(AVAILABLE_NOTES)) == 30
 
+
+def transpose_octave_up(score: dict[int, set[str]]) -> dict[int, set[str]]:
+    def _transpose_note_up(note: str) -> str:
+        return note[:-1] + str(int(note[-1]) + 1)
+
+    return {beat: set(_transpose_note_up(note) for note in notes) for beat, notes in score.items()}
+
+
 if __name__ == "__main__":
     carillon_beat = 8
     filename = "/Users/ra/Documents/MuseScore3/Scores/Carillon_1.musicxml"
     score = get_score_from_file(filename=filename, carillon_beat=carillon_beat)
+    score = transpose_octave_up(score)
 
     create_staves(
         notes=AVAILABLE_NOTES,
